@@ -39,8 +39,9 @@ export AWS_REGION='ap-northeast-2' # AWS 韩国Region
 Ansible AWS 相关的 module 只在ansible 2.2以上的版本支持，因此需要先升级ansible到最新版本再运行：
 ```bash
 sudo pip install --upgrade ansible
-# 该脚本可以运行在任何安装好了 ansible 的机器上
-ansible-playbook one-click-devstack-on-aws.yml -vvv
+# 该脚本可以运行在任何安装好了 ansible 的机器上，根据网络状态，大约需要 30 - 40 分钟。
+ansible-playbook one-click-devstack-on-aws.yml -vvv 
+
 ```
 如果中途运行失败退出，需要在AWS Console 中删除 VPC，及对应的 eip 资源（AWS每个账号默认 5 个eip的配额），下次才能正常运行。
 
