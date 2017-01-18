@@ -31,7 +31,7 @@ Ansible AWS 相关的 module 只在ansible 2.2以上的版本支持，因此需�
 sudo pip install --upgrade ansible
 ansible-playbook one-click-devstack-on-aws.yml -vvv
 ```
-如果路途运行失败退出，需要在AWS Console 中删除 VPC，及对应的 eip 资源（AWS每个账号默认 5 个eip的配额），下次才能正常运行。
+如果中途运行失败退出，需要在AWS Console 中删除 VPC，及对应的 eip 资源（AWS每个账号默认 5 个eip的配额），下次才能正常运行。
 
 4, 打开AWS Console查看资源创建情况，及时登陆各机机器，查看cloud-init运行状态。
 
