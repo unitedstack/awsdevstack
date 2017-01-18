@@ -35,7 +35,7 @@ ansible-playbook one-click-devstack-on-aws.yml -vvv
 
 4, 打开AWS Console查看资源创建情况，及时登陆各机机器，查看cloud-init运行状态。
 
-```
+```bash
 ssh -i yourkey.pem centos@eip    # 注意 CentOS 镜像的默认用户名是centos
 tailf /var/log/cloud-init-output.log
 ```
@@ -44,7 +44,7 @@ tailf /var/log/cloud-init-output.log
 
 一切正常的话，找到 Controller 节点的 eip，直接浏览器运行即可获得 OpenStack Dashboard，也可以登陆 Controller 节点运行OpenStack CLI。
 
-```
+```bash
 ssh -i yourkey.pem centos@eip
 sudo su -l stack # 切换 stack 账号，方便查看 devstack screen
 cd devstack # vim local.conf 查看 devstack 本机配置
