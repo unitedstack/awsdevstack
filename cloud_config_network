@@ -1,0 +1,65 @@
+#cloud-config
+
+users:
+  - default
+  - name: stack
+    lock_passwd: False
+    sudo: ["ALL=(ALL) NOPASSWD:ALL\nDefaults:stack !requiretty"]
+    shell: /bin/bash
+
+write_files:
+  - content: |
+        #!/bin/sh
+        sudo yum update -qy
+        sudo yum install -qy git vim
+        sudo chown stack:stack /home/stack
+        cd /home/stack
+        git clone https://git.openstack.org/openstack-dev/devstack
+        cd devstack
+        git checkout remotes/origin/stable/newton -b newton
+
+        echo "[[local|localrc]]" > local.conf
+        echo "" >> local.conf
+        echo "#OFFLINE=True" >> local.conf
+        echo "" >> local.conf
+        echo "DEST=/opt/stack" >> local.conf
+        echo "GIT_BASE=https://github.com" >> local.conf
+        echo "LOGFILE=\$DEST/logs/stack.sh.log" >> local.conf
+        echo "LOGDAYS=2" >> local.conf
+        echo "LOGDIR=\$DEST/logs" >> local.conf
+        echo "LOG_COLOR=True" >> local.conf
+        echo "" >> local.conf
+        echo "ADMIN_PASSWORD=secret" >> local.conf
+        echo "DATABASE_PASSWORD=secret" >> local.conf
+        echo "RABBIT_PASSWORD=secret" >> local.conf
+        echo "SERVICE_PASSWORD=secret" >> local.conf
+        echo "" >> local.conf
+        echo "HOST_IP=10.99.1.11" >> local.conf
+        echo "TUNNEL_ENDPOINT_IP=10.99.4.11" >> local.conf
+        echo "" >> local.conf
+        echo "SERVICE_HOST=10.99.1.10" >> local.conf
+        echo "MYSQL_HOST=10.99.1.10" >> local.conf
+        echo "RABBIT_HOST=10.99.1.10" >> local.conf
+        echo "GLANCE_HOSTPORT=10.99.1.10:9292" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "PUBLIC_INTERFACE=eth3" >> local.conf
+        echo "" >> local.conf
+        echo "# Open vSwitch provider networking configuration" >> local.conf
+        echo "OVS_PHYSICAL_BRIDGE=br-ex" >> local.conf
+        echo "PUBLIC_BRIDGE=br-ex" >> local.conf
+        echo "OVS_BRIDGE_MAPPINGS=public:br-ex" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "# Second Network Node" >> local.conf
+        echo "disable_all_services" >> local.conf
+        echo "enable_service neutron q-dhcp q-meta q-agt q-l3" >> local.conf
+
+        sudo ifconfig eth1 10.99.4.11/24
+        sudo ifconfig eth3 up
+        ./stack.sh
+    path: /home/stack/start.sh
+    permissions: 0755
+
+runcmd:
+  - su -l stack ./start.sh

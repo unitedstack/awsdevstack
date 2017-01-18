@@ -1,0 +1,357 @@
+# export AWS_ACCESS_KEY_ID='abc'
+# export AWS_SECRET_ACCESS_KEY='def'
+# export AWS_REGION='ap-northeast-2'
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+  vars:
+    instance_type: c4.4xlarge
+    keypair: macpro-seoul
+    image: ami-c74789a9 
+    spot_price: 0.113
+
+
+
+  tasks:
+    - name: Provision a demo vpc with subnets
+      ec2_vpc:
+        state: present
+        cidr_block: 10.99.0.0/16
+        resource_tags: {"Enviroment":"openstack_devstack", "Name": "openstack-auto"}
+        subnets:
+          - cidr: 10.99.1.0/24
+            az: ap-northeast-2c
+            resource_tags:  {"Name": "mgnt_net"}
+          - cidr: 10.99.4.0/24
+            az: ap-northeast-2c
+            resource_tags:  {"Name": "sdn_tunnel_net"}
+          - cidr: 10.99.7.9/24
+            az: ap-northeast-2c
+            resource_tags:  {"Name": "storage_data_net"}
+          - cidr: 10.99.10.0/24
+            az: ap-northeast-2c
+            resource_tags:  {"Name": "external_public_net"}
+        internet_gateway: True
+        route_tables:
+            - subnets:
+                - 10.99.1.0/24
+                - 10.99.10.0/24
+              routes:
+                - dest: 0.0.0.0/0
+                  gw: igw
+      register: vpc
+
+
+    - name: Print Debug info
+      debug: 
+        var: vpc
+
+    - ec2_vpc_net_facts:
+        filters:
+          "tag:Name": "openstack-auto"
+      register: vpc_os
+
+
+    - name: Create Security Group for OpenStack
+      ec2_group: 
+        name: openstack_sec_group
+        description: default group for openstack
+        vpc_id: "{{vpc_os.vpcs[0].id}}"
+        rules:
+          - proto: icmp
+            from_port: -1 # icmp type, -1 = any type
+            to_port:  -1 # icmp subtype, -1 = any subtype
+            cidr_ip: 0.0.0.0/0
+          - proto: tcp
+            from_port: 1
+            to_port: 60000
+            cidr_ip: 0.0.0.0/0
+      register: secgroup
+
+
+    - ec2_vpc_subnet_facts:
+        filters:
+          "tag:Name": "mgnt_net"
+          "vpc_id": "{{vpc_os.vpcs[0].id}}"
+      register: mgnt_net
+
+    - ec2_vpc_subnet_facts:
+        filters:
+          "tag:Name": "sdn_tunnel_net"
+          "vpc_id": "{{vpc_os.vpcs[0].id}}"
+      register: sdn_tunnel_net
+
+    - ec2_vpc_subnet_facts:
+        filters:
+          "tag:Name": "storage_data_net"
+          "vpc_id": "{{vpc_os.vpcs[0].id}}"
+      register: storage_data_net
+
+    - ec2_vpc_subnet_facts:
+        filters:
+          "tag:Name": "external_public_net"
+          "vpc_id": "{{vpc_os.vpcs[0].id}}"
+      register: external_public_net
+
+
+
+    - name: Create ENIs for Controller Node
+      debug:
+        msg: ""
+
+    - ec2_eni:
+        private_ip_address: 10.99.1.10
+        subnet_id: "{{mgnt_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: mgnt_nic0 
+
+    - ec2_eip:
+        device_id: "{{mgnt_nic0.interface.id}}"
+
+    - ec2_eni:
+        private_ip_address: 10.99.4.10
+        subnet_id: "{{sdn_tunnel_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: sdn_nic0
+    - ec2_eni:
+        private_ip_address: 10.99.7.10
+        subnet_id: "{{storage_data_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: stor_nic0
+    - ec2_eni:
+        private_ip_address: 10.99.10.10
+        subnet_id: "{{external_public_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+        secondary_private_ip_addresses: # floating CIDR: 10.99.10.128/27
+           - 10.99.10.128
+           - 10.99.10.129
+           - 10.99.10.130
+           - 10.99.10.131
+           - 10.99.10.132
+           - 10.99.10.133
+           - 10.99.10.134
+           - 10.99.10.135
+           - 10.99.10.136
+           - 10.99.10.137
+           - 10.99.10.138
+           - 10.99.10.139
+           - 10.99.10.140
+           - 10.99.10.141
+           - 10.99.10.142
+           - 10.99.10.143
+           - 10.99.10.144
+           - 10.99.10.145
+           - 10.99.10.146
+           - 10.99.10.147
+           - 10.99.10.148
+           - 10.99.10.149
+           - 10.99.10.150
+           - 10.99.10.151
+           - 10.99.10.152
+           - 10.99.10.153
+           - 10.99.10.154
+           - 10.99.10.155
+           - 10.99.10.156
+
+      register: external_nic0
+
+
+
+    - name: Create ENIs for Network Node
+      debug:
+        msg: ""
+
+
+    - ec2_eni:
+        private_ip_address: 10.99.1.11
+        subnet_id: "{{mgnt_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: mgnt_nic1 
+
+    - ec2_eip:
+        device_id: "{{mgnt_nic1.interface.id}}"
+
+    - ec2_eni:
+        private_ip_address: 10.99.4.11
+        subnet_id: "{{sdn_tunnel_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: sdn_nic1
+    - ec2_eni:
+        private_ip_address: 10.99.7.11
+        subnet_id: "{{storage_data_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: stor_nic1
+    - ec2_eni:
+        private_ip_address: 10.99.10.11
+        subnet_id: "{{external_public_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: external_nic1
+
+
+    - name: Create ENIs for Computer1
+      debug:
+        msg: ""
+
+
+    - ec2_eni:
+        private_ip_address: 10.99.1.12
+        subnet_id: "{{mgnt_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: mgnt_nic2 
+
+    - ec2_eip:
+        device_id: "{{mgnt_nic2.interface.id}}"
+
+    - ec2_eni:
+        private_ip_address: 10.99.4.12
+        subnet_id: "{{sdn_tunnel_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: sdn_nic2
+    - ec2_eni:
+        private_ip_address: 10.99.7.12
+        subnet_id: "{{storage_data_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: stor_nic2
+    - ec2_eni:
+        private_ip_address: 10.99.10.12
+        subnet_id: "{{external_public_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: external_nic2
+
+    - name: Create ENIs for Computer2
+      debug:
+        msg: ""
+
+
+    - ec2_eni:
+        private_ip_address: 10.99.1.13
+        subnet_id: "{{mgnt_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: mgnt_nic3 
+
+    - ec2_eip:
+        device_id: "{{mgnt_nic3.interface.id}}"
+
+    - ec2_eni:
+        private_ip_address: 10.99.4.13
+        subnet_id: "{{sdn_tunnel_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: sdn_nic3
+    - ec2_eni:
+        private_ip_address: 10.99.7.13
+        subnet_id: "{{storage_data_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: stor_nic3
+    - ec2_eni:
+        private_ip_address: 10.99.10.13
+        subnet_id: "{{external_public_net.subnets[0].id}}"
+        security_groups: "{{secgroup.group_id}}"
+        source_dest_check: false
+        state: present
+      register: external_nic3
+
+
+    - name: Creat OpenStack servers
+      debug:
+        msg: ""
+
+    - ec2:
+        spot_price: "{{spot_price}}"
+        spot_wait_timeout: 180
+        wait: yes
+        instance_tags:
+          Name: OS_Controller 
+        instance_type: "{{instance_type}}"
+        keypair: "{{keypair}}"
+        image: "{{image}}"
+        count: 1
+        user_data: "{{ lookup('file', 'cloud_config_controller') }}"
+        volumes:
+          - device_name: /dev/sda1
+            volume_type: gp2
+            volume_size: 120
+        network_interfaces: ["{{mgnt_nic0.interface.id}}","{{sdn_nic0.interface.id}}", "{{stor_nic0.interface.id}}", "{{external_nic0.interface.id}}"]
+
+
+    - ec2:
+        spot_price: "{{spot_price}}"
+        spot_wait_timeout: 180
+        wait: yes
+        instance_tags:
+          Name: OS_Network
+        instance_type: "{{instance_type}}"
+        keypair: "{{keypair}}"
+        image: "{{image}}"
+        count: 1
+        user_data: "{{ lookup('file', 'cloud_config_network') }}"
+        volumes:
+          - device_name: /dev/sda1
+            volume_type: gp2
+            volume_size: 20
+        network_interfaces: ["{{mgnt_nic1.interface.id}}","{{sdn_nic1.interface.id}}", "{{stor_nic1.interface.id}}", "{{external_nic1.interface.id}}"]
+
+    - ec2:
+        spot_price: "{{spot_price}}"
+        spot_wait_timeout: 180
+        wait: yes
+        instance_tags:
+          Name: OS_Computer1
+        instance_type: "{{instance_type}}"
+        keypair: "{{keypair}}"
+        image: "{{image}}"
+        count: 1
+        user_data: "{{ lookup('file', 'cloud_config_computer1') }}"
+        volumes:
+          - device_name: /dev/sda1
+            volume_type: gp2
+            volume_size: 100
+        network_interfaces: ["{{mgnt_nic2.interface.id}}","{{sdn_nic2.interface.id}}", "{{stor_nic2.interface.id}}", "{{external_nic2.interface.id}}"]
+
+
+    - ec2:
+        spot_price: "{{spot_price}}"
+        spot_wait_timeout: 180
+        wait: yes
+        instance_tags:
+          Name: OS_Computer2
+        instance_type: "{{instance_type}}"
+        keypair: "{{keypair}}"
+        image: "{{image}}"
+        count: 1
+        user_data: "{{ lookup('file', 'cloud_config_computer2') }}"
+        volumes:
+          - device_name: /dev/sda1
+            volume_type: gp2
+            volume_size: 100
+        network_interfaces: ["{{mgnt_nic3.interface.id}}","{{sdn_nic3.interface.id}}", "{{stor_nic3.interface.id}}", "{{external_nic3.interface.id}}"]

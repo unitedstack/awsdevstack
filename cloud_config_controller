@@ -1,0 +1,115 @@
+#cloud-config
+
+users:
+  - default
+  - name: stack
+    lock_passwd: False
+    sudo: ["ALL=(ALL) NOPASSWD:ALL\nDefaults:stack !requiretty"]
+    shell: /bin/bash
+
+write_files:
+  - content: |
+        #!/bin/sh
+        sudo yum update -qy
+        sudo yum install -qy git vim
+        sudo chown stack:stack /home/stack
+        cd /home/stack
+        git clone https://git.openstack.org/openstack-dev/devstack
+        cd devstack
+        git checkout remotes/origin/stable/newton -b newton
+        sed -i '353s/sudo ip route replace/\#sudo ip route replace/' lib/neutron_plugins/services/l3
+        eip=`curl -s http://169.254.169.254/latest/meta-data/public-ipv4`
+        echo "[[local|localrc]]" > local.conf
+        echo "" >> local.conf
+        echo "#OFFLINE=True" >> local.conf
+        echo "" >> local.conf
+        echo "DEST=/opt/stack" >> local.conf
+        echo "GIT_BASE=https://github.com" >> local.conf
+        echo "LOGFILE=\$DEST/logs/stack.sh.log" >> local.conf
+        echo "LOGDAYS=2" >> local.conf
+        echo "LOGDIR=\$DEST/logs" >> local.conf
+        echo "LOG_COLOR=True" >> local.conf
+        echo "" >> local.conf
+        echo "NOVNCPROXY_URL=http://$eip:6080/vnc_auto.html" >> local.conf
+        echo "ADMIN_PASSWORD=secret" >> local.conf
+        echo "DATABASE_PASSWORD=secret" >> local.conf
+        echo "RABBIT_PASSWORD=secret" >> local.conf
+        echo "SERVICE_PASSWORD=secret" >> local.conf
+        echo "" >> local.conf
+        echo "HOST_IP=10.99.1.10" >> local.conf
+        echo "TUNNEL_ENDPOINT_IP=10.99.4.10" >> local.conf
+        echo "" >> local.conf
+        echo "SERVICE_HOST=10.99.1.10" >> local.conf
+        echo "MYSQL_HOST=10.99.1.10" >> local.conf
+        echo "RABBIT_HOST=10.99.1.10" >> local.conf
+        echo "GLANCE_HOSTPORT=10.99.1.10:9292" >> local.conf
+        echo "" >> local.conf
+        echo "VOLUME_BACKING_FILE_SIZE=102500M" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "## Neutron options" >> local.conf
+        echo "Q_USE_SECGROUP=True" >> local.conf
+        echo "FLOATING_RANGE=\"10.99.10.128/27\"" >> local.conf
+        echo "Q_FLOATING_ALLOCATION_POOL=start=10.99.10.129,end=10.99.10.156" >> local.conf
+        echo "PUBLIC_NETWORK_GATEWAY="10.99.10.1"" >> local.conf
+        echo "PUBLIC_INTERFACE=eth3" >> local.conf
+        echo "" >> local.conf
+        echo "# Open vSwitch provider networking configuration" >> local.conf
+        echo "Q_USE_PROVIDERNET_FOR_PUBLIC=True" >> local.conf
+        echo "OVS_PHYSICAL_BRIDGE=br-ex" >> local.conf
+        echo "PUBLIC_BRIDGE=br-ex" >> local.conf
+        echo "OVS_BRIDGE_MAPPINGS=public:br-ex" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "DOWNLOAD_DEFAULT_IMAGES=False" >> local.conf
+        echo "IMAGE_URLS=\"http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img,\"" >> local.conf
+        echo "#IMAGE_URLS+=\"http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img,\"" >> local.conf
+        echo "IMAGE_URLS+=\"http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2\"" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "# ---------- DevStack Default Services ----------" >> local.conf
+        echo "" >> local.conf
+        echo "#Keystone " >> local.conf
+        echo "enable_service key" >> local.conf
+        echo "" >> local.conf
+        echo "# Nova" >> local.conf
+        echo "enable_service n-api n-cpu n-cond n-sch n-novnc n-cauth" >> local.conf
+        echo "" >> local.conf
+        echo "# Glance" >> local.conf
+        echo "enable_service g-api g-reg" >> local.conf
+        echo "" >> local.conf
+        echo "# Cinder" >> local.conf
+        echo "enable_service c-sch c-api c-vol" >> local.conf
+        echo "" >> local.conf
+        echo "# Neutron" >> local.conf
+        echo "disable_service n-net" >> local.conf
+        echo "enable_service neutron q-svc q-dhcp q-meta q-agt q-l3" >> local.conf
+        echo "" >> local.conf
+        echo "# Horizon " >> local.conf
+        echo "enable_service horizon" >> local.conf
+        echo "" >> local.conf
+        echo "#Additional Services" >> local.conf
+        echo "enable_service rabbit tempest mysql dstat" >> local.conf
+        echo "" >> local.conf
+        echo "# ---------- DevStack Optional Services ----------" >> local.conf
+        echo "" >> local.conf
+        echo "# Heat" >> local.conf
+        echo "enable_service heat h-api h-api-cfn h-api-cw h-eng" >> local.conf
+        echo "" >> local.conf
+        echo "# Swift" >> local.conf
+        echo "#enable_service s-proxy s-object s-container s-account" >> local.conf
+        echo "" >> local.conf
+        echo "# ---------- DevStack Plugin Services ----------" >> local.conf
+        echo "" >> local.conf
+        echo "" >> local.conf
+        echo "INSTALL_TEMPEST=True" >> local.conf
+        echo "ENABLE_IDENTITY_V2=False" >> local.conf
+
+        sudo ifconfig eth1 10.99.4.10/24
+        sudo ifconfig eth3 up
+        ./stack.sh
+    path: /home/stack/start.sh
+    permissions: 0755
+
+runcmd:
+  - su -l stack ./start.sh
