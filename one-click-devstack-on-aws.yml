@@ -9,7 +9,8 @@
     instance_type: c4.4xlarge
     keypair: macpro-seoul
     image: ami-c74789a9 
-    spot_price: 0.113
+    spot_price: 0.13
+    az: ap-northeast-2a
 
 
 
@@ -21,16 +22,16 @@
         resource_tags: {"Enviroment":"openstack_devstack", "Name": "openstack-auto"}
         subnets:
           - cidr: 10.99.1.0/24
-            az: ap-northeast-2c
+            az: "{{az}}"
             resource_tags:  {"Name": "mgnt_net"}
           - cidr: 10.99.4.0/24
-            az: ap-northeast-2c
+            az: "{{az}}"
             resource_tags:  {"Name": "sdn_tunnel_net"}
           - cidr: 10.99.7.9/24
-            az: ap-northeast-2c
+            az: "{{az}}"
             resource_tags:  {"Name": "storage_data_net"}
           - cidr: 10.99.10.0/24
-            az: ap-northeast-2c
+            az: "{{az}}"
             resource_tags:  {"Name": "external_public_net"}
         internet_gateway: True
         route_tables:
