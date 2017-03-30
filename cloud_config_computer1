@@ -36,6 +36,7 @@ write_files:
         echo "" >> local.conf
         echo "HOST_IP=10.99.1.12" >> local.conf
         echo "TUNNEL_ENDPOINT_IP=10.99.4.12" >> local.conf
+        echo "VNCSERVER_LISTEN=0.0.0.0" >> local.conf
         echo "" >> local.conf
         echo "SERVICE_HOST=10.99.1.10" >> local.conf
         echo "MYSQL_HOST=10.99.1.10" >> local.conf
@@ -54,7 +55,7 @@ write_files:
         echo "" >> local.conf
         echo "# Additional Computer Node" >> local.conf
         echo "disable_all_services" >> local.conf
-        echo "enable_service n-cpu q-agt q-l3" >> local.conf
+        echo "enable_service n-novnc n-cpu q-agt q-l3" >> local.conf
 
         sudo ifconfig eth1 10.99.4.12/24
         ./stack.sh

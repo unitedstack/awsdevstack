@@ -9,7 +9,7 @@
     instance_type: c4.4xlarge
     keypair: macpro-seoul
     image: ami-c74789a9 
-    spot_price: 0.13
+    spot_price: 0.125
     az: ap-northeast-2a
 
 

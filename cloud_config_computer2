@@ -36,6 +36,7 @@ write_files:
         echo "" >> local.conf
         echo "HOST_IP=10.99.1.13" >> local.conf
         echo "TUNNEL_ENDPOINT_IP=10.99.4.13" >> local.conf
+        echo "VNCSERVER_LISTEN=0.0.0.0" >> local.conf
         echo "" >> local.conf
         echo "SERVICE_HOST=10.99.1.10" >> local.conf
         echo "MYSQL_HOST=10.99.1.10" >> local.conf

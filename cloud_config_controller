@@ -31,6 +31,7 @@ write_files:
         echo "LOG_COLOR=True" >> local.conf
         echo "" >> local.conf
         echo "NOVNCPROXY_URL=http://$eip:6080/vnc_auto.html" >> local.conf
+        echo "VNCSERVER_LISTEN=0.0.0.0" >> local.conf 
         echo "ADMIN_PASSWORD=secret" >> local.conf
         echo "DATABASE_PASSWORD=secret" >> local.conf
         echo "RABBIT_PASSWORD=secret" >> local.conf
@@ -100,6 +101,8 @@ write_files:
         echo "#enable_service s-proxy s-object s-container s-account" >> local.conf
         echo "" >> local.conf
         echo "# ---------- DevStack Plugin Services ----------" >> local.conf
+        echo "enable_plugin sahara git://git.openstack.org/openstack/sahara newton" >> local.conf
+        echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard newton" >> local.conf
         echo "" >> local.conf
         echo "" >> local.conf
         echo "INSTALL_TEMPEST=True" >> local.conf
