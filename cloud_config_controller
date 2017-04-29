@@ -103,8 +103,8 @@ write_files:
         echo "" >> local.conf
         echo "# ---------- DevStack Plugin Services ----------" >> local.conf
         echo "disable_service zookeeper" >> local.conf
-        echo "enable_plugin sahara git://git.openstack.org/openstack/sahara" >> local.conf
-        echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard" >> local.conf
+        echo "enable_plugin sahara git://git.openstack.org/openstack/sahara stable/newton" >> local.conf
+        echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard stable/newton" >> local.conf
         echo "" >> local.conf
         echo "" >> local.conf
         echo "INSTALL_TEMPEST=True" >> local.conf
