@@ -52,7 +52,7 @@ write_files:
         echo "Q_USE_SECGROUP=True" >> local.conf
         echo "FLOATING_RANGE=\"10.99.10.128/27\"" >> local.conf
         echo "Q_FLOATING_ALLOCATION_POOL=start=10.99.10.129,end=10.99.10.156" >> local.conf
-        echo "PUBLIC_NETWORK_GATEWAY="10.99.10.1"" >> local.conf
+        echo "PUBLIC_NETWORK_GATEWAY="10.99.10.129"" >> local.conf
         echo "PUBLIC_INTERFACE=eth3" >> local.conf
         echo "" >> local.conf
         echo "# Open vSwitch provider networking configuration" >> local.conf
@@ -101,8 +101,8 @@ write_files:
         echo "#enable_service s-proxy s-object s-container s-account" >> local.conf
         echo "" >> local.conf
         echo "# ---------- DevStack Plugin Services ----------" >> local.conf
-        echo "enable_plugin sahara git://git.openstack.org/openstack/sahara newton" >> local.conf
-        echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard newton" >> local.conf
+        echo "enable_plugin sahara git://git.openstack.org/openstack/sahara" >> local.conf
+        echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard" >> local.conf
         echo "" >> local.conf
         echo "" >> local.conf
         echo "INSTALL_TEMPEST=True" >> local.conf
