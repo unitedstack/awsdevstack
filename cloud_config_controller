@@ -90,6 +90,7 @@ write_files:
         echo "enable_service horizon" >> local.conf
         echo "" >> local.conf
         echo "#Additional Services" >> local.conf
+        echo "TEMPEST_BRANCH=13.0.0" >> local.conf
         echo "enable_service rabbit tempest mysql dstat" >> local.conf
         echo "" >> local.conf
         echo "# ---------- DevStack Optional Services ----------" >> local.conf
