@@ -101,6 +101,7 @@ write_files:
         echo "#enable_service s-proxy s-object s-container s-account" >> local.conf
         echo "" >> local.conf
         echo "# ---------- DevStack Plugin Services ----------" >> local.conf
+        echo "disable_service zookeeper" >> local.conf
         echo "enable_plugin sahara git://git.openstack.org/openstack/sahara" >> local.conf
         echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard" >> local.conf
         echo "" >> local.conf
