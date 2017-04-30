@@ -28,6 +28,8 @@ write_files:
         echo "LOGDAYS=2" >> local.conf
         echo "LOGDIR=\$DEST/logs" >> local.conf
         echo "LOG_COLOR=True" >> local.conf
+        echo "VNCSERVER_PROXYCLIENT_ADDRESS=10.99.1.13"
+        echo "VNCSERVER_LISTEN=0.0.0.0" >> local.conf
         echo "" >> local.conf
         echo "ADMIN_PASSWORD=secret" >> local.conf
         echo "DATABASE_PASSWORD=secret" >> local.conf
@@ -55,7 +57,7 @@ write_files:
         echo "" >> local.conf
         echo "# Additional Computer Node" >> local.conf
         echo "disable_all_services" >> local.conf
-        echo "enable_service n-cpu q-agt" >> local.conf
+        echo "enable_service n-cpu n-novnc q-agt" >> local.conf
 
         sudo ifconfig eth1 10.99.4.13/24
         ./stack.sh
