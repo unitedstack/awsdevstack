@@ -10,6 +10,7 @@ users:
 write_files:
   - content: |
         #!/bin/sh
+        yum install https://archive.cloudera.com/cdh5/one-click-install/redhat/7/x86_64/cloudera-cdh-5-0.x86_64.rpm -qy
         sudo yum update -qy
         sudo yum install -qy git vim
         sudo chown stack:stack /home/stack
@@ -102,7 +103,6 @@ write_files:
         echo "#enable_service s-proxy s-object s-container s-account" >> local.conf
         echo "" >> local.conf
         echo "# ---------- DevStack Plugin Services ----------" >> local.conf
-        echo "disable_service zookeeper" >> local.conf
         echo "enable_plugin sahara git://git.openstack.org/openstack/sahara stable/newton" >> local.conf
         echo "enable_plugin sahara-dashboard git://git.openstack.org/openstack/sahara-dashboard stable/newton" >> local.conf
         echo "" >> local.conf
