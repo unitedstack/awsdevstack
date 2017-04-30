@@ -53,9 +53,9 @@ write_files:
         echo "OVS_BRIDGE_MAPPINGS=public:br-ex" >> local.conf
         echo "" >> local.conf
         echo "" >> local.conf
-        echo "# Second Network Node" >> local.conf
+        echo "# Additional Computer Node" >> local.conf
         echo "disable_all_services" >> local.conf
-        echo "enable_service n-cpu q-agt q-l3" >> local.conf
+        echo "enable_service n-cpu q-agt" >> local.conf
 
         sudo ifconfig eth1 10.99.4.13/24
         ./stack.sh

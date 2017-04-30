@@ -75,6 +75,7 @@ write_files:
         echo "enable_service key" >> local.conf
         echo "" >> local.conf
         echo "# Nova" >> local.conf
+        echo "NOVNC_BRANCH=stable/v0.6" >> local.conf
         echo "enable_service n-api n-cpu n-cond n-sch n-novnc n-cauth" >> local.conf
         echo "" >> local.conf
         echo "# Glance" >> local.conf
