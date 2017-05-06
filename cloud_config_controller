@@ -10,8 +10,15 @@ users:
 write_files:
   - content: |
         #!/bin/sh
-        yum install https://archive.cloudera.com/cdh5/one-click-install/redhat/7/x86_64/cloudera-cdh-5-0.x86_64.rpm -qy
+        sudo yum install https://archive.cloudera.com/cdh5/one-click-install/redhat/7/x86_64/cloudera-cdh-5-0.x86_64.rpm -qy
         sudo yum update -qy
+        sudo yum install java -qy
+        sudo yum install zookeeper -qy
+        sudo yum install zookeeper-server -qy
+        sudo mkdir -p /var/lib/zookeeper 
+        sudo chown -R zookeeper /var/lib/zookeeper/
+        sudo service zookeeper-server init --myid=1 --force
+        sudo service zookeeper-server start
         sudo yum install -qy git vim
         sudo chown stack:stack /home/stack
         cd /home/stack
@@ -66,6 +73,7 @@ write_files:
         echo "DOWNLOAD_DEFAULT_IMAGES=False" >> local.conf
         echo "IMAGE_URLS=\"http://download.cirros-cloud.net/0.3.4/cirros-0.3.4-x86_64-disk.img,\"" >> local.conf
         echo "#IMAGE_URLS+=\"http://cloud-images.ubuntu.com/xenial/current/xenial-server-cloudimg-amd64-disk1.img,\"" >> local.conf
+        echo "IMAGE_URLS+=\"http://sahara-files.mirantis.com/images/upstream/newton/sahara-newton-ambari-2.2.1.0-centos7.qcow2,\"" >> local.conf
         echo "IMAGE_URLS+=\"http://cloud.centos.org/centos/7/images/CentOS-7-x86_64-GenericCloud.qcow2\"" >> local.conf
         echo "" >> local.conf
         echo "" >> local.conf
@@ -86,6 +94,7 @@ write_files:
         echo "" >> local.conf
         echo "# Neutron" >> local.conf
         echo "disable_service n-net" >> local.conf
+        echo "disable_service zookeeper" >> local.conf
         echo "enable_service neutron q-svc q-dhcp q-meta q-agt q-l3" >> local.conf
         echo "" >> local.conf
         echo "# Horizon " >> local.conf

@@ -57,7 +57,7 @@ write_files:
         echo "" >> local.conf
         echo "# Additional Computer Node" >> local.conf
         echo "disable_all_services" >> local.conf
-        echo "enable_service n-novnc n-cpu q-agt" >> local.conf
+        echo "enable_service n-novnc n-cpu q-agt q-l3" >> local.conf
 
         sudo ifconfig eth1 10.99.4.12/24
         ./stack.sh
